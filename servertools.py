@@ -116,19 +116,19 @@ def monitor(filename, interval, client_address):
     monitor_dictionary[filename].append((client_address, time_now + interval))
     # monitor_dictionary[filename] = file_registry
 
-    print(monitor_dictionary)
+    print(f'Old Monitor List after adding: {monitor_dictionary}')
     
     new_list = []
     # Iterate over the file registry to remove expired entries
     for i in range(len(monitor_dictionary[filename])):
         client_address, interval_expiry = monitor_dictionary[filename][i]
-        print('here', i)
-        print(monitor_dictionary)
+        # print('here', i)
+        # print(monitor_dictionary)
         if interval_expiry >= time_now:
             new_list.append((client_address, interval_expiry))
-            
+
     monitor_dictionary[filename] = new_list
-    print('Monitor List', monitor_dictionary)
+    print('New Monitor List', monitor_dictionary)
     print(f"Client {client_address} is now monitoring file {filename} for the next {interval} seconds.")
     return None
 
