@@ -5,38 +5,16 @@ def udp_client(server_ip, server_port=2222):
     # Create a UDP socket
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_socket.settimeout(1.0)  # Set timeout for recvfrom
-
+    client_socket.connect((server_ip, server_port))
+    client_ip, client_port = client_socket.getsockname()
+    
     # Define the server address and port
     server_address = (server_ip, server_port)
-
-    # message = {
-    #             'id': 1,
-    #             'type': 'read',
-    #             'filename': 'a.txt',
-    #             'offset': 30,
-    #             'num_bytes': 200
-    #         }
-
-    # message = {
-    #     'id': 2,
-    #     'type': 'monitor',
-    #     'filename': 'a.txt',
-    # }
-
-    # message = {
-    #     'id': 3,
-    #     'type': 'insert',
-    #     'filename': 'a.txt',
-    #     'offset': 30,
-    #     'content': 'testcontent'
-    # }
     request_count = 0
-    def generate_request_id(client_socket):
+    
+    def generate_request_id():
         nonlocal request_count
         request_count += 1  # Increment the global request count
-        
-        # Get the client's IP address and port number
-        client_ip, client_port = client_socket.getsockname()
 
         # Combine the request count with the client's IP and port to form the requestId
         request_id = f"{client_ip}:{client_port}:{request_count}"
@@ -88,10 +66,10 @@ def udp_client(server_ip, server_port=2222):
                     message['type'] = 'create'
                     message['filename'] = input("Enter the name of the file to create: ")
 
-                message['id'] = generate_request_id(client_socket)
+                message['id'] = generate_request_id()
                 byte_string = marshaller.marshal(message)
                 print(f"Sending message to server: {byte_string}")
-                client_socket.sendto(byte_string, server_address)
+                client_socket.send(byte_string)
 
                 # Waiting for response from the server
                 print("Waiting for response...")
@@ -113,8 +91,8 @@ def udp_client(server_ip, server_port=2222):
         print("Socket closed.")
 
 if __name__ == "__main__":
-    # SERVER_IP = "192.168.0.104"  # Replace with your server's IP address
-    SERVER_IP = "10.91.182.34"
+    SERVER_IP = "192.168.137.205"  # Replace with your server's IP address
+    # SERVER_IP = "10.91.182.34"
     udp_client(SERVER_IP)
 
 
