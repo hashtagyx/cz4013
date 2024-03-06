@@ -28,8 +28,9 @@ def start_server():
                     pass
                 elif message_type == 'monitor':
                     filename, interval = message_object['filename'], int(message_object['interval'])
-                    servertools.monitor(filename, interval, client_address)
-                    # server_socket.sendto(monitor_data, client_address)
+                    error = servertools.monitor(filename, interval, client_address)
+                    if error != None:
+                        server_socket.sendto(error, client_address)
                     pass
                 elif message_type == 'delete':
                     # delete(filename, offset, num_bytes)

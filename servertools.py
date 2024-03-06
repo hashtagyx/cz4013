@@ -103,6 +103,13 @@ def callback(filename):
     pass
 
 def monitor(filename, interval, client_address):
+    # If filename not in dictionary error handling 
+    if filename not in monitor_dictionary:
+        error = {
+            'type': 'error',
+            'content': 'File not found.'
+        } 
+        return marshaller.marshal(error)
     time_now = time.time()
     # Array of [(client_address, 8pm), (client_address, 7.30pm), (client_address, 7pm)]... 
     file_registry = monitor_dictionary[filename]
@@ -114,7 +121,10 @@ def monitor(filename, interval, client_address):
         client_address, interval_expiry = file_registry[i]
         if interval_expiry < time_now:
             del file_registry[i]
+    print('Monitor List', monitor_dictionary)
     print(f"Client {client_address} is now monitoring file {filename} for the next {interval} seconds.")
+    return None
+
 def delete(filename, offset, num_bytes):
     pass
 
