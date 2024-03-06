@@ -2,6 +2,28 @@ import os
 import time
 import marshaller
 
+current_directory = os.getcwd()
+# Specify the path to the files folder
+files_folder = os.path.join(current_directory, "files")
+
+# Initialize an empty dictionary to store filenames
+monitor_dictionary = {}  # key: filename, val: list of tuples [(client_address, end_time), ... ]
+
+# Check if the files folder exists
+if os.path.exists(files_folder) and os.path.isdir(files_folder):
+    # List all files in the files folder
+    file_names = os.listdir(files_folder)
+
+    # Iterate over the file names
+    for file_name in file_names:
+        # Add each file name to the dictionary as a key
+        monitor_dictionary[file_name] = []
+    
+    # {
+    #     'a.txt': [(client_address, 8pm), (client_address, 7.30pm), (client_address, 7pm)], 
+    #     'b.txt': []
+    # }
+    
 def read(filename, offset, num_bytes):
     
     read_object = {}
@@ -77,9 +99,22 @@ def get_tmserver(filename):
 def insert(filename, offset, content):
     pass
 
-def monitor(filename, interval, client_address):
+def callback(filename):
     pass
 
+def monitor(filename, interval, client_address):
+    time_now = time.time()
+    # Array of [(client_address, 8pm), (client_address, 7.30pm), (client_address, 7pm)]... 
+    file_registry = monitor_dictionary[filename]
+    file_registry.append((client_address, time_now + interval))
+    monitor_dictionary[filename] = file_registry
+
+    # Iterate over the file registry to remove expired entries
+    for i in range(len(file_registry)):
+        client_address, interval_expiry = file_registry[i]
+        if interval_expiry < time_now:
+            del file_registry[i]
+    print(f"Client {client_address} is now monitoring file {filename} for the next {interval} seconds.")
 def delete(filename, offset, num_bytes):
     pass
 

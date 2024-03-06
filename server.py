@@ -10,13 +10,6 @@ def start_server():
     server_socket.bind((server_address, server_port))
     print(f"UDP server up and listening on {server_address}:{server_port}")
 
-    monitor_dictionary = {} # key: filename, val: list of tuples [(client_address, end_time), ... ]
-
-    # {
-    #     'a.txt': [(client_address, 8pm), (client_address, 7.30pm), (client_address, 7pm)], 
-    #     'b.txt': []
-    # }
-
     try:
         while True:
             try:
@@ -34,8 +27,9 @@ def start_server():
                     # insert(filename, offset, content)
                     pass
                 elif message_type == 'monitor':
-                    # monitor(filename, interval, client_address):
-                    
+                    filename, interval = message_object['filename'], int(message_object['interval'])
+                    servertools.monitor(filename, interval, client_address)
+                    # server_socket.sendto(monitor_data, client_address)
                     pass
                 elif message_type == 'delete':
                     # delete(filename, offset, num_bytes)

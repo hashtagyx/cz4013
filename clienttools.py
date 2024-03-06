@@ -117,3 +117,50 @@ class ClientTools:
             print("No response received, server might be busy or offline. Try again.")
             return None
 
+    def monitor(self, filename, interval):
+        # Implementation of the monitor method 
+        print(f"Start cache: {self.cache}")
+        message = {
+                'id': self.generate_request_id(),
+                'type': 'monitor',
+                'filename': filename,
+                'interval': interval
+            }
+        end_time = time.time() + interval
+        self.client_socket.send(marshaller.marshal(message))
+        
+        try:
+            print(f"Client is monitoring file {filename} for the next {interval} seconds.")
+            while time.time() < end_time:
+                try:
+                    byte_string, server_address = self.client_socket.recvfrom(65535)
+                    message_object = marshaller.unmarshal(byte_string)
+                    # update cache here
+                    tm_server = message_object['tm_server']
+                    content = message_object['content']
+                    tc = time.time()
+                    del self.cache[filename] # remove old cache entries
+                    for i in range(len(content)): # populate with new cache entries
+                        self.cache[filename][i] = (content[i], tc, tm_server)
+                    
+                    output = ''.join([self.cache[filename][i][0] for i in range(len(content))])
+                    print(f"Callback for file {filename} triggered. New file content: {output}")
+
+                except socket.timeout:
+                    continue  # Continue the loop if recvfrom times out
+        except KeyboardInterrupt:   
+            print("Keyboard interrupt triggered, exiting client.")
+        finally:
+            self.client_socket.close()
+            print("Client socket closed.")
+        # try:
+        #     server_data, server = self.client_socket.recvfrom(65535)
+        #     server_object = marshaller.unmarshal(server_data)
+        #     if server_object['type'] == 'response':
+        #         print(f"File {filename} was last modified at server time: {server_object['content']}")
+        #     else:
+        #         print(f"Error: {server_object['content']}")
+        #     return server_object
+        # except socket.timeout:
+        #     print("No response received, server might be busy or offline. Try again.")
+        #     return None
