@@ -112,15 +112,22 @@ def monitor(filename, interval, client_address):
         return marshaller.marshal(error)
     time_now = time.time()
     # Array of [(client_address, 8pm), (client_address, 7.30pm), (client_address, 7pm)]... 
-    file_registry = monitor_dictionary[filename]
-    file_registry.append((client_address, time_now + interval))
-    monitor_dictionary[filename] = file_registry
+    # file_registry = monitor_dictionary[filename]
+    monitor_dictionary[filename].append((client_address, time_now + interval))
+    # monitor_dictionary[filename] = file_registry
 
+    print(monitor_dictionary)
+    
+    new_list = []
     # Iterate over the file registry to remove expired entries
-    for i in range(len(file_registry)):
-        client_address, interval_expiry = file_registry[i]
-        if interval_expiry < time_now:
-            del file_registry[i]
+    for i in range(len(monitor_dictionary[filename])):
+        client_address, interval_expiry = monitor_dictionary[filename][i]
+        print('here', i)
+        print(monitor_dictionary)
+        if interval_expiry >= time_now:
+            new_list.append((client_address, interval_expiry))
+            
+    monitor_dictionary[filename] = new_list
     print('Monitor List', monitor_dictionary)
     print(f"Client {client_address} is now monitoring file {filename} for the next {interval} seconds.")
     return None
