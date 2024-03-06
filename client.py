@@ -93,8 +93,6 @@ def udp_client(server_ip, server_port=2222):
 if __name__ == "__main__":
     SERVER_IP = "192.168.137.205"  # Replace with your server's IP address
     # SERVER_IP = "10.91.182.34"
-    SERVER_IP = "192.168.137.205"  # Replace with your server's IP address
-    # SERVER_IP = "10.91.182.34"
     udp_client(SERVER_IP)
 
 
