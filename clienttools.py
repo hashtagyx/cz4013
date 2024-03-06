@@ -136,7 +136,7 @@ class ClientTools:
                     byte_string, server_address = self.client_socket.recvfrom(65535)
                     message_object = marshaller.unmarshal(byte_string)
                     if message_object['type'] == 'error': # No file by the filename found on server
-                        print(f"Error: {message['content']}")
+                        print(f"Error: {message_object['content']}")
                         return
                     # update cache here
                     tm_server = message_object['tm_server']
