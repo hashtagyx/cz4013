@@ -12,8 +12,8 @@ def start_server():
     try:
         while True:
             try:
-                message, client_address = server_socket.recvfrom(1024)
-                print(f"Message from {client_address}: {message.decode('utf-8')}")
+                byte_string, client_address = server_socket.recvfrom(1024)
+                print(f"Message from {client_address}: {marshaller.unmarshal(byte_string)}")
                 server_msg = "This is the server."
                 server_socket.sendto(server_msg.encode(), client_address)
             except socket.timeout:
