@@ -187,8 +187,8 @@ class ClientTools:
         for byte_num in file_cache:
             if byte_num >= offset:
                 new_file_cache[byte_num + LENGTH] = file_cache[byte_num]
-            else:
-                break
+            elif byte_num < offset:
+                new_file_cache[byte_num] = file_cache[byte_num]
 
         # Insert new content into the cache at the specified offset
         for byte_num in range(offset, offset + LENGTH):
