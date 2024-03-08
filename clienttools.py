@@ -143,7 +143,7 @@ class ClientTools:
                     tm_server = message_object['tm_server']
                     content = message_object['content']
                     tc = time.time()
-                    del self.cache[filename] # remove old cache entries
+                    self.cache[filename] = {}  # remove old cache entries/init a new empty dictionary
                     for i in range(len(content)): # populate with new cache entries
                         self.cache[filename][i] = (content[i], tc, tm_server)
                     
