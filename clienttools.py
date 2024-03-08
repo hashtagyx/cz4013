@@ -49,7 +49,7 @@ class ClientTools:
                         if not response or response['type'] == 'error':
                             print('No such filename exists on the server.')
                             return
-                        tm_server = response['content']
+                        tm_server = float(response['content'])
                     if tm_server == tm_client:
                         tc = cur_time
                         byte_dict[i] = (data, tc, tm_client)
@@ -85,7 +85,7 @@ class ClientTools:
                 if not response or response['type'] == 'error':
                     print('No such filename exists on the server.')
                     return
-                tm_server = response['content']
+                tm_server = float(response['content'])
 
             # generate string to print on client side
             for i in range(last - first + 1):
@@ -140,7 +140,7 @@ class ClientTools:
                         print(f"Error: {message_object['content']}")
                         return
                     # update cache here
-                    tm_server = message_object['tm_server']
+                    tm_server = float(message_object['tm_server'])
                     content = message_object['content']
                     tc = time.time()
                     self.cache[filename] = {}  # remove old cache entries/init a new empty dictionary
@@ -180,7 +180,7 @@ class ClientTools:
 
         # server_object['type'] == 'insert_success'
         time_now = time.time()
-        tm_server = server_object['tm_server']
+        tm_server = float(server_object['tm_server'])
         if filename not in self.cache:
             self.cache[filename] = {}
             
