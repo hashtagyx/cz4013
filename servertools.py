@@ -7,7 +7,7 @@ current_directory = os.getcwd()
 files_folder = os.path.join(current_directory, "files")
 
 # Initialize an empty dictionary to store filenames
-monitor_dictionary = {}  # key: filename, val: list of tuples [(client_address, end_time), ... ]
+monitor_dictionary = {}  # key: filename, val: list of tuples e.g. [(client_address, end_time), ... ]
 # pass in as an argument into the function that creates new files 
 
 # Check if the files folder exists
@@ -20,13 +20,7 @@ if os.path.exists(files_folder) and os.path.isdir(files_folder):
         # Add each file name to the dictionary as a key
         monitor_dictionary[file_name] = []
     
-    # {
-    #     'a.txt': [(client_address, 8pm), (client_address, 7.30pm), (client_address, 7pm)], 
-    #     'b.txt': []
-    # }
-    
 def read(filename, offset, num_bytes):
-    
     read_object = {}
     
     try:
@@ -71,11 +65,12 @@ def read(filename, offset, num_bytes):
         return marshaller.marshal(read_object)
 
     except Exception as e:
+        # Return object of type 'error'
         read_object['type'] = 'error'
         read_object['content'] = e
         return marshaller.marshal(read_object)
 
-def get_tmserver(filename):
+def get_tmserver(filename): # idempotent 
     try:
         current_directory = os.getcwd()
 
@@ -90,6 +85,7 @@ def get_tmserver(filename):
             'content': timestamp
         }
         return marshaller.marshal(res)
+
     except FileNotFoundError:
         res = {
             'type': 'error',
@@ -126,6 +122,7 @@ def insert(filename, offset, content):
     return { 'type': 'response', 'tm_server': timestamp }
 
 def callback(filename):
+    # Check if filename is in monitor dictionary
     if filename not in monitor_dictionary:
         callback_obj = {
                 'type': 'error',
@@ -147,14 +144,14 @@ def callback(filename):
     time_now = time.time()
     new_list = []
     for client_address, interval_expiry in monitor_dictionary[filename]:
+        # Check validity of the monitoring client
         if time_now <= interval_expiry:
-            
-
-            # add to new_list
             new_list.append((client_address, interval_expiry))
 
+    # Update the monitor dictionary with the valid monitoring clients
     monitor_dictionary[filename] = new_list
 
+    # If no valid monitoring clients, return error object
     if len(new_list) == 0:
         no_clients_callback_obj = {
             'type': 'error',
@@ -171,7 +168,7 @@ def callback(filename):
     return (callback_obj, client_callback_list)
 
 def monitor(filename, interval, client_address):
-    # If filename not in dictionary error handling 
+    # Check if filename is in monitor dictionary
     if filename not in monitor_dictionary:
         error = {
             'type': 'error',
@@ -179,29 +176,55 @@ def monitor(filename, interval, client_address):
         } 
         return marshaller.marshal(error)
     time_now = time.time()
-    # Array of [(client_address, 8pm), (client_address, 7.30pm), (client_address, 7pm)]... 
-    # file_registry = monitor_dictionary[filename]
-    monitor_dictionary[filename].append((client_address, time_now + interval))
-    # monitor_dictionary[filename] = file_registry
 
+    # Add new monitoring client
+    monitor_dictionary[filename].append((client_address, time_now + interval))
     print(f'Old Monitor List after adding: {monitor_dictionary}')
     
     new_list = []
     # Iterate over the file registry to remove expired entries
     for i in range(len(monitor_dictionary[filename])):
         client_address, interval_expiry = monitor_dictionary[filename][i]
-        # print('here', i)
-        # print(monitor_dictionary)
+        # Only add monitoring clients who are still valid
         if interval_expiry >= time_now:
             new_list.append((client_address, interval_expiry))
 
+    # Update monitor dictionary to only have valid clients
     monitor_dictionary[filename] = new_list
     print('New Monitor List', monitor_dictionary)
     print(f"Client {client_address} is now monitoring file {filename} for the next {interval} seconds.")
     return None
 
-def delete(filename, offset, num_bytes):
-    pass
+def delete(filename, offset, num_bytes): # non-idempotent
+    current_directory = os.getcwd()
+    file_path = os.path.join(current_directory, "files", filename)
 
-def create(filename):
-    pass
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        return { 'type': 'error', 'content': 'File does not exist.' }
+
+    # Open the file to read and update its content
+    with open(file_path, 'r+') as file:
+        file.seek(0, os.SEEK_END)  # Move the cursor to the end of the file
+        file_length = file.tell()  # Get the total length of the file
+
+        # Check if the offset is within the file's length
+        if offset >= file_length:
+            return { 'type': 'error', 'content': 'Offset is beyond the end of the file.' }
+
+        # Check if the deletion range is within the file's content
+        if offset + num_bytes > file_length:
+            return { 'type': 'error', 'content': 'Offset + num_bytes is beyond the end of the file.' }
+
+        file.seek(0)  # Move back the cursor to the beginning of the file
+        file_content = file.read()  # Read the entire file content
+
+        # Construct new content without the specified range
+        new_content = file_content[:offset] + file_content[offset + num_bytes:]
+
+        # Truncate the file and write the new content
+        file.seek(0)
+        file.truncate()
+        file.write(new_content)
+
+    return { 'type': 'response' }
