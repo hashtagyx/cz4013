@@ -45,7 +45,7 @@ def start_server(at_most_once=False):
                      # Performing insert operation
                     insert_resp_data = servertools.insert(filename, offset, content) # Insert content into the file
                     if at_most_once: # at most once invocation handling 
-                        history[message_id] = read_data # store marshalled read bytestring into server history for filtering
+                        history[message_id] = insert_resp_data # store marshalled read bytestring into server history for filtering
                     # if insertion is successful, callback registered clients
                     if insert_resp_data['type'] == 'response':
                         callback_obj, callback_client_list = servertools.callback(filename) # invoke client callback function to notify subscibed clients of the update
@@ -71,7 +71,7 @@ def start_server(at_most_once=False):
                     # Performing delete operation
                     delete_resp_data = servertools.delete(filename, offset, num_bytes) 
                     if at_most_once: # at most once invocation handling 
-                        history[message_id] = read_data # store marshalled read bytestring into server history for filtering
+                        history[message_id] = delete_resp_data # store marshalled read bytestring into server history for filtering
                     # if deletion is successful, callback registered clients
                     if delete_resp_data['type'] == 'response':
                         callback_obj, callback_client_list = servertools.callback(filename) # invoke client callback function to notify subscibed clients of the update
@@ -89,7 +89,7 @@ def start_server(at_most_once=False):
                     filename = message_object['filename']
                     tm_server_result = servertools.get_tmserver(filename)
                     if at_most_once: # at most once invocation handling 
-                        history[message_id] = read_data # store marshalled read bytestring into server history for filtering
+                        history[message_id] = tm_server_result # store marshalled read bytestring into server history for filtering
                     server_socket.sendto(tm_server_result, client_address)      
                     reply_count += 1  # Update counter for the number of replies from the server
                     print(f"Reply Count: {reply_count}")
