@@ -243,20 +243,16 @@ class ClientTools:
     
     def send_and_receive(self, message):
         # Send a request to the server and handle the response, including simulating response loss if enabled
-        print(message)
         self.client_socket.send(marshaller.marshal(message))  # Send the marshalled message to the server
         self.request_count += 1  # Increment the request counter
         if self.response_lost:  # Simulate a lost response scenario
-            response, _ = self.client_socket.recvfrom(65535)  # Dummy receive to simulate waiting for a lost response
-            print(f"r1:r{response}")
+            _, _ = self.client_socket.recvfrom(65535)  # Dummy receive to simulate waiting for a lost response
             self.client_socket.send(marshaller.marshal(message))  # Resend the message
-            print(message)
             self.request_count += 1  # Increment the request counter again for the resent message
 
         print(f"Request Count: {self.request_count}")
         try:
             server_data, server = self.client_socket.recvfrom(65535)  # Wait for the server's response
-            print(f"r2:r{server_data}")
             server_object = marshaller.unmarshal(server_data)  # Unmarshal the response data into a Python object
             if server_object['type'] == 'error':  # Handle any errors reported by the server
                 print(server_object['content'])
