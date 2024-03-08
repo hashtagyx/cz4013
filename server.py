@@ -24,8 +24,19 @@ def start_server():
                     server_socket.sendto(read_data, client_address)
                     
                 elif message_type == 'insert':
-                    # insert(filename, offset, content)
-                    pass
+                    filename, offset, content = message_object['filename'], int(message_object['offset']), message_object['content']
+                    insert_resp_data = servertools.insert(filename, offset, content)
+                    
+                    # if insertion is successful, callback registered clients
+                    if insert_resp_data['type'] == 'response':
+                        callback_obj, callback_client_list = servertools.callback(filename)
+                        if callback_obj['type'] == 'response':
+                            callback_data = marshaller.marshal(callback_obj)
+                            for callback_client in callback_client_list:
+                                server_socket.sendto(callback_data, callback_client)
+                    
+                    server_socket.sendto(marshaller.marshal(insert_resp_data), client_address)
+                    
                 elif message_type == 'monitor':
                     filename, interval = message_object['filename'], int(message_object['interval'])
                     error = servertools.monitor(filename, interval, client_address)

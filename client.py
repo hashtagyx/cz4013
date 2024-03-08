@@ -33,11 +33,11 @@ def main():
                     client_tools.read(filename, offset, num_bytes)
                 # Handle other choices similarly
                 elif choice == '2':
-                    pass
                     # 'insert'
-                    # message['filename'] = input("Enter the filename to insert content into: ")
-                    # message['offset'] = int(input("Enter the offset: "))
-                    # message['content'] = input("Enter the content to insert: ")
+                    filename = input("Enter the filename to insert content into: ")
+                    offset = int(input("Enter the offset: "))
+                    content = input("Enter the content to insert: ")
+                    client_tools.insert(filename, offset, content)
 
                 elif choice == '3':
                     # 'monitor'

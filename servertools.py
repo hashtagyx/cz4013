@@ -8,6 +8,7 @@ files_folder = os.path.join(current_directory, "files")
 
 # Initialize an empty dictionary to store filenames
 monitor_dictionary = {}  # key: filename, val: list of tuples [(client_address, end_time), ... ]
+# pass in as an argument into the function that creates new files 
 
 # Check if the files folder exists
 if os.path.exists(files_folder) and os.path.isdir(files_folder):
@@ -97,10 +98,77 @@ def get_tmserver(filename):
         return marshaller.marshal(res)
 
 def insert(filename, offset, content):
-    pass
+    current_directory = os.getcwd()
+    file_path = os.path.join(current_directory, "files", filename)
+
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        return { 'type': 'error', 'content': 'File does not exist.' }
+
+    # Open the file to read its content
+    with open(file_path, 'r+') as file:
+        file.seek(0, os.SEEK_END)  # Move the cursor to the end of the file
+        file_length = file.tell()  # Get the total length of the file
+
+        # Check if the offset is within the file's length
+        if offset > file_length:
+            return { 'type': 'error', 'content': 'Offset is beyond the end of the file.' }
+
+        # If the offset is within bounds, proceed with the insertion
+        file.seek(offset)  # Move the cursor to the specified offset
+        remaining_content = file.read()  # Read the content from the offset to the end
+        file.seek(offset)  # Move back the cursor to the offset
+        file.write(content + remaining_content)  # Write the new content and then the remaining content
+
+    # After the insertion, get the timestamp
+    timestamp = os.path.getmtime(file_path)
+
+    return { 'type': 'response', 'tm_server': timestamp }
 
 def callback(filename):
-    pass
+    if filename not in monitor_dictionary:
+        callback_obj = {
+                'type': 'error',
+                'content': 'File Not Found',
+            }
+        return (callback_obj, [])
+    
+    current_directory = os.getcwd()
+
+    # Specify the path to the file
+    file_path = os.path.join(current_directory, "files", filename)
+
+    # Read the entire file content as a string
+    with open(file_path, 'r') as file:
+        file_content = file.read()
+
+    # Get the modification time of the file
+    tm_server = os.path.getmtime(file_path)
+    time_now = time.time()
+    new_list = []
+    for client_address, interval_expiry in monitor_dictionary[filename]:
+        if time_now <= interval_expiry:
+            
+
+            # add to new_list
+            new_list.append((client_address, interval_expiry))
+
+    monitor_dictionary[filename] = new_list
+
+    if len(new_list) == 0:
+        no_clients_callback_obj = {
+            'type': 'error',
+            'content': 'No clients to callback.',
+        }
+        return (no_clients_callback_obj, [])
+    
+    callback_obj = {
+        'type': 'response',
+        'content': file_content,
+        'tm_server': tm_server
+    }
+    client_callback_list = [client_address for client_address, _ in new_list]
+    return (callback_obj, client_callback_list)
 
 def monitor(filename, interval, client_address):
     # If filename not in dictionary error handling 

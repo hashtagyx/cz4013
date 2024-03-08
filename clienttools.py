@@ -2,7 +2,7 @@
 import time
 import socket
 import marshaller
-
+from collections import OrderedDict
 class ClientTools:
     def __init__(self, server_ip, ttl=100, server_port=2222):
         self.cache = {}
@@ -14,12 +14,12 @@ class ClientTools:
 
     def initialize_socket(self):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        client_socket.settimeout(1.0)  # Set timeout for recvfrom
+        client_socket.settimeout(2.0)  # Set timeout for recvfrom
         client_socket.connect(self.server_address)
         return client_socket
 
     def generate_request_id(self):
-        self.request_count += 1  # Increment the global request count
+        self.request_count += 1  # Increment the request count
         request_id = f"{self.client_ip}:{self.client_port}:{self.request_count}"
         return request_id
 
@@ -98,6 +98,7 @@ class ClientTools:
     def get_tmserver(self, filename):
         # Implementation to get the last modification time from the server
         message_object = {
+            'id': self.generate_request_id(),
             'type': 'get_tmserver',
             'filename': filename
         }
@@ -155,14 +156,52 @@ class ClientTools:
             print("Keyboard interrupt triggered, exiting client.")
             self.client_socket.close()
             print("Client socket closed.")
-        # try:
-        #     server_data, server = self.client_socket.recvfrom(65535)
-        #     server_object = marshaller.unmarshal(server_data)
-        #     if server_object['type'] == 'response':
-        #         print(f"File {filename} was last modified at server time: {server_object['content']}")
-        #     else:
-        #         print(f"Error: {server_object['content']}")
-        #     return server_object
-        # except socket.timeout:
-        #     print("No response received, server might be busy or offline. Try again.")
-        #     return None
+
+    def insert(self, filename, offset, content):
+        message = {
+            'id': self.generate_request_id(),
+            'type': 'insert',
+            'filename': filename,
+            'offset': offset,
+            'content': content
+        }
+        print(f"Old cache before insert: {self.cache}")
+        self.client_socket.send(marshaller.marshal(message))
+        try:
+            server_data, server = self.client_socket.recvfrom(65535)
+            server_object = marshaller.unmarshal(server_data)
+            if server_object['type'] == 'error': # No such file or offset invalid
+                print(server_object['content'])
+                return
+            # print(f"Received message from server: {server_data}")
+        except socket.timeout:
+            print("No response received, server might be busy or offline. Try again.")
+            return
+
+        # server_object['type'] == 'insert_success'
+        time_now = time.time()
+        tm_server = server_object['tm_server']
+        if filename not in self.cache:
+            self.cache[filename] = {}
+            
+        file_cache = self.cache[filename]
+        # Sort the items of file_cache in reverse order by keys (byte positions)
+        sorted_items = sorted(file_cache.items(), key=lambda x: x[0], reverse=True)
+        # Create a new OrderedDict with the sorted items
+        file_cache = OrderedDict(sorted_items)
+
+        LENGTH = len(content)
+        new_file_cache = {}
+
+        for byte_num in file_cache: # moving the existing content in the cache by LENGTH bytes
+            if byte_num >= offset:
+                new_file_cache[byte_num + LENGTH] = file_cache[byte_num]
+            else:
+                break
+        for byte_num in range(offset, offset + LENGTH): # saving the inserted content into the cache
+            idx = byte_num - offset
+            new_file_cache[byte_num] = (content[idx], time_now, tm_server)
+        
+        self.cache[filename] = new_file_cache # updating the cache
+        print(f"New cache after insert: {self.cache}")
+        print(f"Inserted {LENGTH} bytes at position {offset} of {filename}.")
