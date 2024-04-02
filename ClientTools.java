@@ -4,7 +4,6 @@ import java.net.*;
 import java.util.*;
 
 public class ClientTools {
-    private final String serverIp;
     private final int serverPort;
     private final int ttl; // Time to live (in milliseconds) for cached data
     private final boolean responseLost; // Flag to simulate lost response scenario
@@ -17,7 +16,6 @@ public class ClientTools {
     private int requestCount; // Counter for tracking the number of requests sent
 
     public ClientTools(String serverIp, int serverPort, int ttl, boolean responseLost) {
-        this.serverIp = serverIp;
         this.serverPort = serverPort;
         this.ttl = ttl;
         this.responseLost = responseLost;
