@@ -27,6 +27,7 @@ def start_server(at_most_once=False):
                 # Check if the message_id exists in history
                 if message_id in history:
                     # message_id exists in history, send the stored response to the client
+                    print(history[message_id], client_address, type(history[message_id]), type(client_address))
                     server_socket.sendto(history[message_id], client_address) 
                     print(f"Reply Count: {reply_count}")
 

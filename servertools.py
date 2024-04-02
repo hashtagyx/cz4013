@@ -39,7 +39,6 @@ def read(filename, offset, num_bytes):
 
         # Get the size of the file
         file_size = os.path.getsize(file_path)
-        print(file_size)
 
         # Convert offset and num_bytes to integers
         offset = int(offset)
