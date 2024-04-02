@@ -26,7 +26,7 @@ public class ClientTools {
         try {
             this.serverAddress = InetAddress.getByName(serverIp);
             this.clientSocket = new DatagramSocket();
-            this.clientIp = InetAddress.getLocalHost();
+            this.clientIp = InetAddress.getLocalHost().getHostAddress();
             this.clientPort = clientSocket.getLocalPort();
         } catch (IOException e) {
             throw new RuntimeException("Failed to initialize client socket", e);
