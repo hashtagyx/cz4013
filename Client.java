@@ -11,16 +11,22 @@ public class Client {
 
         // Parse command-line arguments
         if (args.length > 0) {
-            for (String arg : args) {
-                if (arg.startsWith("--ttl=")) {
-                    ttl = Integer.parseInt(arg.substring(6)) * 1000; // TTL value in milliseconds
-                } else if (arg.equals("--response_lost")) {
-                    responseLost = true;
-                }
+    for (int i = 0; i < args.length; i++) {
+        if (args[i].equals("--ttl")) {
+            if (i + 1 < args.length) { // Make sure there's another argument
+                ttl = Integer.parseInt(args[i + 1]) * 1000; // Convert the next argument to an integer and multiply by 1000
+                i++; // Skip the next argument since we've already processed it as the TTL value
+            } else {
+                throw new IllegalArgumentException("Expected a value after --ttl");
             }
+        } else if (args[i].equals("--response_lost")) {
+            responseLost = true;
+        }
+    }
         }
 
-        String ipAddress = "192.168.0.102";
+        // String ipAddress = "192.168.0.102";
+        String ipAddress = "10.91.176.139";
         ClientTools clientTools = new ClientTools(ipAddress, 2222, ttl, responseLost);
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 

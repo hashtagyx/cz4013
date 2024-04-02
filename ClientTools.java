@@ -46,8 +46,6 @@ public class ClientTools {
 
         Map<Integer, CacheEntry> byteDict = cache.get(filename); // Reference to the cache for the specific file
         Integer first = null, last = null; // Markers for the first and last byte positions needing update from server
-
-
         // Iterate through the requested byte range
         for (int i = offset; i < offset + numBytes; i++) {
             if (!byteDict.containsKey(i)) { // If byte i is not cached
@@ -59,7 +57,7 @@ public class ClientTools {
                 // Check if cached byte is fresh
                 CacheEntry cacheEntry = byteDict.get(i);
                 Double timeDiff = timeNow - cacheEntry.getTimestamp();
-                if (timeDiff >= ttl) { // If cached byte is stale
+                if (Double.compare(timeDiff, (double) ttl) >= 0) { // If cached byte is stale
                     if (tmServer == null) { // Retrieve server's last modification time if not already done
                         Map<String, String> response = getTmServer(filename);
                         if (response.get("type").equals("error")) {
@@ -68,7 +66,7 @@ public class ClientTools {
                         }
                         tmServer = Double.parseDouble(response.get("content"));
                     }
-                    if (tmServer == cacheEntry.getTmServer()) { // Refresh timestamp in cache since the file hasn't been modified
+                    if (Double.compare(tmServer, cacheEntry.getTmServer()) <= 0) { // Refresh timestamp in cache since the file hasn't been modified
                         byteDict.put(i, new CacheEntry(cacheEntry.getData(), timeNow, tmServer));
                     } else { // Server's version is newer than cache's version
                         if (first == null) {
@@ -79,7 +77,7 @@ public class ClientTools {
                 }
             }
         }
-
+     
         // Request data from the server for uncached or stale bytes
         if (first != null) {
             Map<String, String> message = new HashMap<>();
@@ -158,7 +156,7 @@ public class ClientTools {
             // Set the socket timeout to the remaining time in the monitoring interval
             int remainingTime = (int) (endTime - System.currentTimeMillis());
             clientSocket.setSoTimeout(remainingTime);
-            while ((double) System.currentTimeMillis() < endTime) {
+            while (Double.compare((double) System.currentTimeMillis(), endTime) < 0) {
                 try {
                     byte[] buffer = new byte[65535];
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
