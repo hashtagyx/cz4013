@@ -25,7 +25,7 @@ public class CacheEntry {
     @Override
     public String toString() {
         return "CacheEntry{" +
-            "data=" + data +
+            "data=" + (char) data +
             ", timestamp=" + timestamp +
             ", tmServer=" + tmServer +
             '}';
