@@ -5,7 +5,7 @@ This repository contains the implementation of a system designed for remote file
 ## Getting Started
 
 ### Requirements
-- Ensure that the client and server are on the same LAN and obtain the server's IP address.
+- Ensure that the client and server are on the same LAN and obtain the server's IP address using `ipconfig`/`ifconfig`.
 - Python environment for running Python scripts.
 - Java SDK for compiling and running Java applications.
 
