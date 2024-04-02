@@ -1,10 +1,10 @@
-// ClientApp.java
+// Client.java
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
-public class ClientApp {
+public class Client {
     public static void main(String[] args) {
         int ttl = 100 * 1000; // Default TTL value (100 seconds)
         boolean responseLost = false; // Default value for handling lost responses

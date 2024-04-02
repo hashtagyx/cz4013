@@ -18,7 +18,6 @@ def marshal(object):
 def unmarshal(received: bytes) -> object:
     # Decode the bytes argument 'received' into a UTF-8 string.
     received = received.decode('utf-8')
-    print(received)
 
     # Split the decoded string by '|' to create a list, where each element
     # is expected to be a key/value pair joined by '/'.
