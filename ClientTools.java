@@ -1,4 +1,3 @@
-
 // ClientTools.java
 import java.io.*;
 import java.net.*;
@@ -7,15 +6,15 @@ import java.util.*;
 public class ClientTools {
     private final String serverIp;
     private final int serverPort;
-    private final int ttl;
-    private final boolean responseLost;
+    private final int ttl; // Time to live (in milliseconds) for cached data
+    private final boolean responseLost; // Flag to simulate lost response scenario
     private final Map<String, Map<Integer, CacheEntry>> cache; // Cache data structure
     private final InetAddress serverAddress;
     private final DatagramSocket clientSocket;
     private final String clientIp;
     private final int clientPort;
-    private int uniqueReqCount;
-    private int requestCount;
+    private int uniqueReqCount; // Counter for generating unique request IDs
+    private int requestCount; // Counter for tracking the number of requests sent
 
     public ClientTools(String serverIp, int serverPort, int ttl, boolean responseLost) {
         this.serverIp = serverIp;
@@ -53,9 +52,9 @@ public class ClientTools {
         for (int i = offset; i < offset + numBytes; i++) {
             if (!byteDict.containsKey(i)) { // If byte i is not cached
                 if (first == null) {
-                    first = i;
+                    first = i; // Mark the start of the range to be fetched from the server
                 }
-                last = i;
+                last = i; // Update the end of the range to be fetched from the server
             } else {
                 // Check if cached byte is fresh
                 CacheEntry cacheEntry = byteDict.get(i);
@@ -73,9 +72,9 @@ public class ClientTools {
                         byteDict.put(i, new CacheEntry(cacheEntry.getData(), timeNow, tmServer));
                     } else { // Server's version is newer than cache's version
                         if (first == null) {
-                            first = i;
+                            first = i; // Mark the start of the range to be fetched from the server
                         }
-                        last = i;
+                        last = i; // Update the end of the range to be fetched from the server
                     }
                 }
             }
@@ -147,21 +146,23 @@ public class ClientTools {
         message.put("interval", String.valueOf(interval));
 
         Double endTime = (double) System.currentTimeMillis() + interval * 1000L;
-        // sendMessage(message);
+
         try {
-            sendMessage(message);
+            sendMessage(message); // Send the monitor request to the server
         } catch (IOException e) {
             e.printStackTrace();
-            // or handle the exception in a different way
         }
 
         try {
             System.out.println("Client is monitoring file " + filename + " for the next " + interval + " seconds.");
+            // Set the socket timeout to the remaining time in the monitoring interval
+            int remainingTime = (int) (endTime - System.currentTimeMillis());
+            clientSocket.setSoTimeout(remainingTime);
             while ((double) System.currentTimeMillis() < endTime) {
                 try {
                     byte[] buffer = new byte[65535];
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    clientSocket.receive(packet);
+                    clientSocket.receive(packet); // Receive updates from the server
                     Map<String, String> messageObject = Marshaller.unmarshal(packet.getData(), packet.getOffset(), packet.getLength());
                     if (messageObject.get("type").equals("error")) { // No file by the filename found on server
                         System.out.println("Error: " + messageObject.get("content"));
@@ -184,7 +185,7 @@ public class ClientTools {
                     System.out.println("Callback for file " + filename + " triggered. New file content: " + output.toString());
 
                 } catch (SocketTimeoutException e) {
-                    // Continue the loop if recvfrom times out
+                    // Continue the loop if socket times out
                 }
             }
         } catch (IOException e) {
@@ -206,7 +207,7 @@ public class ClientTools {
             return;
         }
 
-        // server_object['type'] == 'response'
+        // serverObject['type'] == 'response'
         Double timeNow = (double) System.currentTimeMillis(); // Current time for cache update
         Double tmServer = Double.parseDouble(serverObject.get("tm_server")); // Last modification time from server
 
@@ -216,7 +217,7 @@ public class ClientTools {
         }
 
         Map<Integer, CacheEntry> fileCache = cache.get(filename);
-        // Sort the items of file_cache in descending/reverse order by keys (byte positions)
+        // Sort the items of fileCache in descending/reverse order by keys (byte positions)
         List<Map.Entry<Integer, CacheEntry>> sortedEntries = new ArrayList<>(fileCache.entrySet());
         sortedEntries.sort(Map.Entry.comparingByKey(Comparator.reverseOrder()));
 
@@ -229,9 +230,9 @@ public class ClientTools {
         for (Map.Entry<Integer, CacheEntry> entry : sortedEntries) {
             int byteNum = entry.getKey();
             if (byteNum >= offset) {
-                newFileCache.put(byteNum + LENGTH, entry.getValue());
+                newFileCache.put(byteNum + LENGTH, entry.getValue()); // Shift bytes to the right
             } else if (byteNum < offset) {
-                newFileCache.put(byteNum, entry.getValue());
+                newFileCache.put(byteNum, entry.getValue()); // Keep bytes before offset unchanged
             }
         }
 
@@ -333,7 +334,7 @@ public class ClientTools {
 
     private String generateRequestId() {
         uniqueReqCount++;
-        return clientIp + ":" + clientPort + ":" + uniqueReqCount;
+        return clientIp + ":" + clientPort + ":" + uniqueReqCount; // Generate a unique request ID
     }
 
     public void closeSocket() {
