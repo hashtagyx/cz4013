@@ -21,4 +21,13 @@ public class CacheEntry {
     public Double getTmServer() {
         return tmServer;
     }
+
+    @Override
+    public String toString() {
+        return "CacheEntry{" +
+            "data=" + data +
+            ", timestamp=" + timestamp +
+            ", tmServer=" + tmServer +
+            '}';
+    }
 }

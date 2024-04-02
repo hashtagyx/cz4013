@@ -19,7 +19,7 @@ public class ClientApp {
                 }
             }
         }
-        String ipAddress = "192.168.0.104";
+        String ipAddress = "192.168.0.102";
         ClientTools clientTools = new ClientTools(ipAddress, 2222, ttl, responseLost);
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
