@@ -12,7 +12,7 @@ public class ClientTools {
     private final Map<String, Map<Integer, CacheEntry>> cache; // Cache data structure
     private final InetAddress serverAddress;
     private final DatagramSocket clientSocket;
-    private final InetAddress clientIp;
+    private final String clientIp;
     private final int clientPort;
     private int uniqueReqCount;
     private int requestCount;
@@ -37,8 +37,8 @@ public class ClientTools {
 
     public void read(String filename, int offset, int numBytes) {
         System.out.println("Start cache: " + cache);
-        long timeNow = System.currentTimeMillis(); // Current time for freshness checks
-        Long tmServer = null; // Server's last modification time for the file
+        Double timeNow = (double) System.currentTimeMillis(); // Current time for freshness checks
+        Double tmServer = null; // Server's last modification time for the file
 
         // Initialize cache for the file if not present
         if (!cache.containsKey(filename)) {
@@ -59,7 +59,7 @@ public class ClientTools {
             } else {
                 // Check if cached byte is fresh
                 CacheEntry cacheEntry = byteDict.get(i);
-                long timeDiff = timeNow - cacheEntry.getTimestamp();
+                Double timeDiff = timeNow - cacheEntry.getTimestamp();
                 if (timeDiff >= ttl) { // If cached byte is stale
                     if (tmServer == null) { // Retrieve server's last modification time if not already done
                         Map<String, String> response = getTmServer(filename);
@@ -67,7 +67,7 @@ public class ClientTools {
                             System.out.println("No such filename exists on the server.");
                             return;
                         }
-                        tmServer = Long.parseLong(response.get("content"));
+                        tmServer = Double.parseDouble(response.get("content"));
                     }
                     if (tmServer == cacheEntry.getTmServer()) { // Refresh timestamp in cache since the file hasn't been modified
                         byteDict.put(i, new CacheEntry(cacheEntry.getData(), timeNow, tmServer));
@@ -102,7 +102,7 @@ public class ClientTools {
                     System.out.println("No such filename exists on the server.");
                     return;
                 }
-                tmServer = Long.parseLong(response.get("content"));
+                tmServer = Double.parseDouble(response.get("content"));
             }
 
             // Update cache for fetched bytes
@@ -146,7 +146,7 @@ public class ClientTools {
         message.put("filename", filename);
         message.put("interval", String.valueOf(interval));
 
-        long endTime = System.currentTimeMillis() + interval * 1000L;
+        Double endTime = (double) System.currentTimeMillis() + interval * 1000L;
         // sendMessage(message);
         try {
             sendMessage(message);
@@ -157,7 +157,7 @@ public class ClientTools {
 
         try {
             System.out.println("Client is monitoring file " + filename + " for the next " + interval + " seconds.");
-            while (System.currentTimeMillis() < endTime) {
+            while ((double) System.currentTimeMillis() < endTime) {
                 try {
                     byte[] buffer = new byte[65535];
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -168,9 +168,9 @@ public class ClientTools {
                         return;
                     }
                     // Update cache with the latest file content from the server.
-                    long tmServer = Long.parseLong(messageObject.get("tm_server"));
+                    Double tmServer = Double.parseDouble(messageObject.get("tm_server"));
                     String content = messageObject.get("content");
-                    long tc = System.currentTimeMillis();
+                    Double tc = (double) System.currentTimeMillis();
                     cache.put(filename, new HashMap<>()); // Reset cache for the file.
                     for (int i = 0; i < content.length(); i++) { // Populate with new cache entries
                         cache.get(filename).put(i, new CacheEntry((byte) content.charAt(i), tc, tmServer));
@@ -207,8 +207,8 @@ public class ClientTools {
         }
 
         // server_object['type'] == 'response'
-        long timeNow = System.currentTimeMillis(); // Current time for cache update
-        long tmServer = Long.parseLong(serverObject.get("tm_server")); // Last modification time from server
+        Double timeNow = (double) System.currentTimeMillis(); // Current time for cache update
+        Double tmServer = Double.parseDouble(serverObject.get("tm_server")); // Last modification time from server
 
         // Initialize file cache if not present
         if (!cache.containsKey(filename)) {

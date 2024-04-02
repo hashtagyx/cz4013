@@ -8,8 +8,14 @@ import java.util.HashMap;
 public class Marshaller {
     public static byte[] marshal(Map<String, String> object) {
         StringBuilder sb = new StringBuilder();
+        boolean first = true; // Flag to check if it's the first iteration
         for (Map.Entry<String, String> entry : object.entrySet()) {
-            sb.append(entry.getKey()).append('/').append(entry.getValue()).append('|');
+            if (first) {
+                first = false; // It's no longer the first iteration
+            } else {
+                sb.append('|'); // Append delimiter before each entry except the first
+            }
+            sb.append(entry.getKey()).append('/').append(entry.getValue());
         }
         return sb.toString().getBytes(StandardCharsets.UTF_8);
     }

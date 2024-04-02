@@ -1,10 +1,10 @@
 // CacheEntry.java
 public class CacheEntry {
     private final byte data;
-    private final long timestamp;
-    private final long tmServer;
+    private final Double timestamp;
+    private final Double tmServer;
 
-    public CacheEntry(byte data, long timestamp, long tmServer) {
+    public CacheEntry(byte data, Double timestamp, Double tmServer) {
         this.data = data;
         this.timestamp = timestamp;
         this.tmServer = tmServer;
@@ -14,11 +14,11 @@ public class CacheEntry {
         return data;
     }
 
-    public long getTimestamp() {
+    public Double getTimestamp() {
         return timestamp;
     }
 
-    public long getTmServer() {
+    public Double getTmServer() {
         return tmServer;
     }
 }

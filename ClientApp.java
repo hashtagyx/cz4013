@@ -6,14 +6,14 @@ import java.util.regex.Pattern;
 
 public class ClientApp {
     public static void main(String[] args) {
-        int ttl = 100; // Default TTL value
+        int ttl = 100 * 1000; // Default TTL value (100 seconds)
         boolean responseLost = false; // Default value for handling lost responses
 
         // Parse command-line arguments
         if (args.length > 0) {
             for (String arg : args) {
                 if (arg.startsWith("--ttl=")) {
-                    ttl = Integer.parseInt(arg.substring(6));
+                    ttl = Integer.parseInt(arg.substring(6)) * 1000; // TTL value in milliseconds
                 } else if (arg.equals("--response_lost")) {
                     responseLost = true;
                 }
