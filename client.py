@@ -5,7 +5,7 @@ from clienttools import ClientTools
 
 def main(ttl, response_lost):
     # Initialize server IP and port configurations.
-    SERVER_IP = "192.168.0.102"  # Primary server IP. Replace with the actual IP address.
+    SERVER_IP = "192.168.28.205"  # Primary server IP. Replace with the actual IP address.
     SERVER_PORT = 2222  # Server port. Change if using a different port.
     
     # Initialize client tools with server configurations and arguments.
