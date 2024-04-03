@@ -58,3 +58,5 @@ The repository includes the following components:
 - `client.py`: Main client application in Python, to be launched on the client PC.
 - `clienttools.py`: Python version of utility tools for the client application.
 - `./files/test.txt`: Text file that the distributed program edits.
+
+Done by: Chua Yong Xuan (U2020627F) and Daniel Yang (U2022630G)
