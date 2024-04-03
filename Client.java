@@ -27,7 +27,7 @@ public class Client {
             }
         }
 
-        String ipAddress = "10.91.176.139";
+        String ipAddress = "192.168.28.205";
         ClientTools clientTools = new ClientTools(ipAddress, 2222, ttl, responseLost);
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
@@ -51,7 +51,7 @@ public class Client {
                 case "2": // Insert content into file
                     filename = getValidInput(reader, "Enter the filename to insert content into: ", "^[\\w.]+$");
                     offset = getPositiveInt(reader, "Enter the offset: ");
-                    String content = getValidInput(reader, "Enter the content to insert: ", "^[\\w.]+$");
+                    String content = getValidInput(reader, "Enter the content to insert: ", "^[\\w.\s]+$");
                     clientTools.insert(filename, offset, content);
                     break;
                 case "3": // Register for updates

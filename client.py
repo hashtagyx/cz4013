@@ -72,7 +72,7 @@ def main(ttl, response_lost):
 
 def get_valid_string(prompt):
     # Validate string input to contain only alphanumeric characters and '.'.
-    pattern = re.compile(r'^[\w.]+$')
+    pattern = re.compile(r'^[\w.\s]+$')
     while True:
         user_input = input(prompt)
         if pattern.match(user_input):
