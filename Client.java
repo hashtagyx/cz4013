@@ -51,7 +51,7 @@ public class Client {
                 case "2": // Insert content into file
                     filename = getValidInput(reader, "Enter the filename to insert content into: ", "^[\\w.]+$");
                     offset = getPositiveInt(reader, "Enter the offset: ");
-                    String content = getValidInput(reader, "Enter the content to insert: ", "^[\\w.\s]+$");
+                    String content = getValidInput(reader, "Enter the content to insert: ", "^[\\w.\\s]+$");
                     clientTools.insert(filename, offset, content);
                     break;
                 case "3": // Register for updates
