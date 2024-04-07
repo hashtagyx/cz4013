@@ -44,6 +44,12 @@ public class Marshaller {
         for (String pair : pairs) {
             if (!pair.isEmpty()) {
                 String[] keyValue = pair.split("/"); // Split the pair into key and value
+                if (keyValue.length==1){
+                    String[] updatedKeyValue = new String[2];
+                    System.arraycopy(keyValue, 0, updatedKeyValue, 0, keyValue.length);
+                    updatedKeyValue[1] = ""; // Set the second element to an empty string
+                    keyValue = updatedKeyValue;
+                }
                 obj.put(keyValue[0], keyValue[1]); // Add the key-value pair to the Map
             }
         }
